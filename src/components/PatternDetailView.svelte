@@ -33,7 +33,9 @@
 
   $: patternSessionIds = patternSessions.map((s) => s.sessionId);
 
-  const NOWColor = "#999999";
+  // const NOWColor = "#999999";
+  const GRAY = "#999999";
+  const PURPLE = "#7B52AB";
   // let scoreSummary = init.scoreSummary;
   // let percentageSummaryData = init.percentageSummaryData;
   // let percentageData = init.percentageData;
@@ -348,12 +350,12 @@
     <div class="legend-item">
       <div
         class="color-box"
-        style="background-color: {NOWColor}; border-color: {NOWColor}"
+        style="background-color: {PURPLE}; border-color: {PURPLE}"
       ></div>
       <span>{title[0]}</span>
     </div>
     <div class="legend-item">
-      <div
+      <!-- <div
         class="color-box striped"
         style="
           border-color: {NOWColor};
@@ -363,6 +365,10 @@
             transparent 1px 6px
           );
         "
+      ></div> -->
+      <div
+        class="color-box"
+        style="background-color: {GRAY}; border-color: {GRAY}"
       ></div>
       <span>{title[1]}</span>
     </div>

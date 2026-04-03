@@ -1,40 +1,43 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import jStat from 'jstat';
+  import { onMount } from "svelte";
+  import jStat from "jstat";
 
   // --- Component Props ---
   /** The key to extract from data items (e.g., "length", "judge_score") */
   export let featureName: string;
   /** The "highlight" dataset. Items are { session_id, value } */
-  export let data: { session_id: string, value: string | number }[] = [];
+  export let data: { session_id: string; value: string | number }[] = [];
   /** The "comparison" dataset. Structure depends on `flag`. */
   export let patternData: any[] | Set<any> = [];
   /** The "universe" of all session data, used when flag is not 'overall'. */
-  export let featureData: { session_id: string, [key: string]: any }[] = [];
+  export let featureData: { session_id: string; [key: string]: any }[] = [];
   /** Controls how `patternData` is interpreted. */
-  export let flag: 'overall' | string;
+  export let flag: "overall" | string;
   /** Legend titles for the plots: [0] = highlight (data), [1] = comparison (patternData) */
-  export let title: [string, string] = ['Group 1', 'Group 2'];
+  export let title: [string, string] = ["Group 1", "Group 2"];
 
   const binSizes: Record<string, number> = {
     judge_score: -1,
     length: 500,
     AI_ratio: 0.1,
-    sum_semantic_score: 3
+    sum_semantic_score: 3,
   };
 
   const nameMapping: Record<string, string> = {
-    judge_score: 'Score',
-    length: 'Content Length',
-    AI_ratio: 'AI Ratio',
-    sum_semantic_score: 'Accumulative Semantic Scores'
+    judge_score: "Score",
+    length: "Content Length",
+    AI_ratio: "AI Ratio",
+    sum_semantic_score: "Accumulative Semantic Scores",
   };
 
   const binSize = binSizes[featureName] ?? 1; // default to 1 if featureName not found
 
-
   // --- Charting Constants ---
-  const HIGHLIGHT_COLOR = '#999999'; // Color for the 'data' group
+  // const HIGHLIGHT_COLOR = "#999999"; // Color for the 'data' group
+  const GRAY = "#999999";
+  const PURPLE = "#7B52AB";
+  const GRAY_ALPHA = 0.55;
+  const PURPLE_ALPHA = 0.65;
   const PADDING_LEFT = 40;
   const PADDING_BOTTOM = 45;
   const PADDING_TOP = 40;
@@ -55,25 +58,25 @@
     // Process the "highlight" group (from `data` prop)
     // The `value` is already extracted.
     highlightArr = data
-      .map(d => parseFloat(String(d.value)))
-      .filter(v => !isNaN(v));
+      .map((d) => parseFloat(String(d.value)))
+      .filter((v) => !isNaN(v));
 
     // Process the "comparison" group (from `patternData`)
     let tempOverallArr: number[] = [];
-    if (flag === 'overall') {
+    if (flag === "overall") {
       // `patternData` is an array of data objects
       // We just need to extract the value by `featureName`
       tempOverallArr = Array.from(patternData)
-        .map(item => parseFloat(item[featureName]))
-        .filter(v => !isNaN(v));
+        .map((item) => parseFloat(item[featureName]))
+        .filter((v) => !isNaN(v));
     } else {
       // `patternData` is an array of session_ids
       // We must look up the full session in `featureData`
       const comparisonSessionIds = new Set(patternData);
       tempOverallArr = featureData
-        .filter(item => comparisonSessionIds.has(item.session_id))
-        .map(item => parseFloat(item[featureName]))
-        .filter(v => !isNaN(v));
+        .filter((item) => comparisonSessionIds.has(item.session_id))
+        .map((item) => parseFloat(item[featureName]))
+        .filter((v) => !isNaN(v));
     }
     overallArr = tempOverallArr;
   }
@@ -84,25 +87,25 @@
   function drawChart() {
     if (!canvasEl) return;
     if (!ctx) {
-      ctx = canvasEl.getContext('2d');
+      ctx = canvasEl.getContext("2d");
       if (!ctx) return;
     }
 
     // --- 1. Canvas Setup ---
     canvasEl.width = CHART_WIDTH * DPR;
     canvasEl.height = CHART_HEIGHT * DPR;
-    canvasEl.style.width = CHART_WIDTH + 'px';
-    canvasEl.style.height = CHART_HEIGHT + 'px';
+    canvasEl.style.width = CHART_WIDTH + "px";
+    canvasEl.style.height = CHART_HEIGHT + "px";
 
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.clearRect(0, 0, CHART_WIDTH, CHART_HEIGHT);
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, CHART_WIDTH, CHART_HEIGHT);
-    
+
     // --- 2. Dynamic Binning with binSize ---
     const allValues = [...highlightArr, ...overallArr];
     if (allValues.length === 0) {
-      drawEmptyChart('No data to display');
+      drawEmptyChart("No data to display");
       return;
     }
 
@@ -146,15 +149,18 @@
       highlightBins[highlightBins.length - 1].max = globalMax + 0.0001;
     }
 
-
     // --- 3. Populate Bins ---
-    overallArr.forEach(val => {
-      const binIndex = comparisonBins.findIndex(b => val >= b.min && val < b.max);
+    overallArr.forEach((val) => {
+      const binIndex = comparisonBins.findIndex(
+        (b) => val >= b.min && val < b.max,
+      );
       if (binIndex !== -1) comparisonBins[binIndex].count++;
     });
 
-    highlightArr.forEach(val => {
-      const binIndex = highlightBins.findIndex(b => val >= b.min && val < b.max);
+    highlightArr.forEach((val) => {
+      const binIndex = highlightBins.findIndex(
+        (b) => val >= b.min && val < b.max,
+      );
       if (binIndex !== -1) highlightBins[binIndex].count++;
     });
 
@@ -163,29 +169,38 @@
       let start = 0;
       while (binsa[start].count === 0 && binsb[start].count === 0) start++;
       let end = Math.max(binsa.length, binsb.length) - 1;
-      while (end >= 0 && binsa[end].count === 0 && binsb[end].count === 0) end--;
+      while (end >= 0 && binsa[end].count === 0 && binsb[end].count === 0)
+        end--;
       return [binsa.slice(start, end + 1), binsb.slice(start, end + 1)];
     };
 
-    [comparisonBins, highlightBins] = trimEmptyBins(comparisonBins, highlightBins);
+    [comparisonBins, highlightBins] = trimEmptyBins(
+      comparisonBins,
+      highlightBins,
+    );
 
     // Calculate percentages
     const totalCount = comparisonBins.reduce((acc, b) => acc + b.count, 0);
-    comparisonBins.forEach(b => { b.percent = totalCount > 0 ? b.count / totalCount : 0; });
+    comparisonBins.forEach((b) => {
+      b.percent = totalCount > 0 ? b.count / totalCount : 0;
+    });
 
     const nowTotalCount = highlightBins.reduce((acc, b) => acc + b.count, 0);
-    highlightBins.forEach(b => { b.nowPercent = nowTotalCount > 0 ? b.count / nowTotalCount : 0; });
+    highlightBins.forEach((b) => {
+      b.nowPercent = nowTotalCount > 0 ? b.count / nowTotalCount : 0;
+    });
 
     // --- 4. Draw Axes and Labels ---
-    ctx.fillStyle = '#000';
-    ctx.font = '6px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
+    ctx.fillStyle = "#000";
+    ctx.font = "6px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
 
-    const barWidth = (CHART_WIDTH - PADDING_LEFT - PADDING_RIGHT) / comparisonBins.length;
-    
+    const barWidth =
+      (CHART_WIDTH - PADDING_LEFT - PADDING_RIGHT) / comparisonBins.length;
+
     // Draw X-axis labels (rotated bin labels)
-    const rotateLabel = comparisonBins.some(bin => bin.label.length > 4);
+    const rotateLabel = comparisonBins.some((bin) => bin.label.length > 4);
     comparisonBins.forEach((bin, i) => {
       const x = PADDING_LEFT + i * barWidth + barWidth / 2;
       const y = CHART_HEIGHT - PADDING_BOTTOM + 5;
@@ -193,35 +208,42 @@
       ctx.save();
       ctx.translate(x, y);
       if (rotateLabel) ctx.rotate(angle);
-      ctx.textAlign = 'right';
+      ctx.textAlign = "right";
       ctx.fillText(bin.label, 0, 0);
       ctx.restore();
     });
 
     // Draw Y-axis labels (%
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    ctx.font = '10px sans-serif';
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.font = "10px sans-serif";
     const ySteps = 5;
     const tickLength = 3;
     for (let i = 0; i <= ySteps; i++) {
-      const y = CHART_HEIGHT - PADDING_BOTTOM - (i * (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM) / ySteps);
-      const percent = (i * 100 / ySteps) + '%';
+      const y =
+        CHART_HEIGHT -
+        PADDING_BOTTOM -
+        (i * (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM)) / ySteps;
+      const percent = (i * 100) / ySteps + "%";
       ctx.fillText(percent, PADDING_LEFT - 10, y);
       ctx.beginPath();
-      ctx.strokeStyle = '#999999';
+      ctx.strokeStyle = "#999999";
       ctx.lineWidth = 0.5;
       ctx.moveTo(PADDING_LEFT - tickLength, y);
       ctx.lineTo(PADDING_LEFT, y);
       ctx.stroke();
     }
-    
+
     // Draw axis title
-    ctx.textAlign = 'center';
-    ctx.fillText(nameMapping[featureName], PADDING_LEFT + (CHART_WIDTH - PADDING_LEFT - PADDING_RIGHT) / 2, CHART_HEIGHT - PADDING_BOTTOM + 35);
-    
+    ctx.textAlign = "center";
+    ctx.fillText(
+      nameMapping[featureName],
+      PADDING_LEFT + (CHART_WIDTH - PADDING_LEFT - PADDING_RIGHT) / 2,
+      CHART_HEIGHT - PADDING_BOTTOM + 35,
+    );
+
     // --- Draw axis lines (grey + right-side boundary) ---
-    ctx.strokeStyle = '#ccc'; // grey color for all axis lines
+    ctx.strokeStyle = "#ccc"; // grey color for all axis lines
     ctx.lineWidth = 1;
 
     // left (Y-axis)
@@ -242,41 +264,51 @@
     ctx.lineTo(CHART_WIDTH - PADDING_RIGHT, CHART_HEIGHT - PADDING_BOTTOM);
     ctx.stroke();
 
-
     // --- 5. Draw Histogram Bars ---
-    const barWidthRatio = 0.4;
-    const totalBarsWidth = 2 * barWidth * barWidthRatio;
-    const offset = (barWidth - totalBarsWidth) / 2;
+    // const barWidthRatio = 0.4;
+    // const totalBarsWidth = 2 * barWidth * barWidthRatio;
+    // const offset = (barWidth - totalBarsWidth) / 2;
+    const overlapRatio = 1;
+    const bw = barWidth * overlapRatio;
+    const offset = (barWidth - bw) / 2;
 
     // Draw highlight bars (solid)
-    ctx.fillStyle = HIGHLIGHT_COLOR;
+    // ctx.fillStyle = HIGHLIGHT_COLOR;
     highlightBins.forEach((bin, i) => {
-      const barHeight = bin.nowPercent * (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM);
+      const barHeight =
+        bin.nowPercent * (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM);
       const x = PADDING_LEFT + i * barWidth + offset;
       const y = CHART_HEIGHT - PADDING_BOTTOM - barHeight;
-      const bw = barWidth * barWidthRatio;
+
+      ctx.save();
+      ctx.fillStyle = PURPLE;
+      ctx.globalAlpha = PURPLE_ALPHA;
       ctx.fillRect(x, y, bw, barHeight);
+      ctx.restore();
     });
 
     // Create pattern for comparison bars
-    const stripedPattern = createStripedPattern(ctx, HIGHLIGHT_COLOR);
-    if (stripedPattern) ctx.fillStyle = stripedPattern;
+    // const stripedPattern = createStripedPattern(ctx, HIGHLIGHT_COLOR);
+    // if (stripedPattern) ctx.fillStyle = stripedPattern;
 
     // Draw comparison bars (striped)
     comparisonBins.forEach((bin, i) => {
-      const barHeight = bin.percent * (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM);
-      const x = PADDING_LEFT + i * barWidth + offset + barWidth * barWidthRatio;
+      const barHeight =
+        bin.percent * (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM);
+      const x = PADDING_LEFT + i * barWidth + offset;
       const y = CHART_HEIGHT - PADDING_BOTTOM - barHeight;
-      const bw = barWidth * barWidthRatio;
+
+      ctx.save();
+      ctx.fillStyle = GRAY;
+      ctx.globalAlpha = GRAY_ALPHA;
       ctx.fillRect(x, y, bw, barHeight);
-      ctx.strokeStyle = HIGHLIGHT_COLOR;
-      ctx.lineWidth = 0.3;
-      ctx.strokeRect(x, y, bw, barHeight);
+      ctx.restore();
     });
 
     // --- 6. Calculate Stats (p-value, means) ---
     const overallMean = overallArr.length > 0 ? jStat.mean(overallArr) : 0;
-    const highlightMean = highlightArr.length > 0 ? jStat.mean(highlightArr) : 0;
+    const highlightMean =
+      highlightArr.length > 0 ? jStat.mean(highlightArr) : 0;
 
     let pValue: number | null = null;
     if (overallArr.length > 1 && highlightArr.length > 1) {
@@ -289,38 +321,104 @@
 
       const t = (mean1 - mean2) / Math.sqrt(var1 / n1 + var2 / n2);
 
-      const df = Math.pow(var1 / n1 + var2 / n2, 2) /
-                ((Math.pow(var1 / n1, 2) / (n1 - 1)) + (Math.pow(var2 / n2, 2) / (n2 - 1)));
+      const df =
+        Math.pow(var1 / n1 + var2 / n2, 2) /
+        (Math.pow(var1 / n1, 2) / (n1 - 1) + Math.pow(var2 / n2, 2) / (n2 - 1));
 
       pValue = 2 * (1 - jStat.studentt.cdf(Math.abs(t), df));
     }
 
+    drawMeanLine(ctx, overallMean, globalMin, globalMax, GRAY);
+    drawMeanLine(ctx, highlightMean, globalMin, globalMax, PURPLE);
 
     // --- 7. Draw Top Plot (StdDev Bars) ---
-    const topContainerHeight = PADDING_TOP;
-    
-    // Draw bounding box for top plot
-    ctx.strokeStyle = '#ccc';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(PADDING_LEFT, 0, CHART_WIDTH - PADDING_LEFT, topContainerHeight);
+    // const topContainerHeight = PADDING_TOP;
 
-    // Draw std dev bars
-    const overallMeanX = drawStdErrorBar(ctx, overallArr, globalMin, globalMax, '#666', topContainerHeight - 5, title[1]);
-const highlightMeanX = drawStdErrorBar(ctx, highlightArr, globalMin, globalMax, '#000', topContainerHeight - 25, title[0]);
+    // // Draw bounding box for top plot
+    // ctx.strokeStyle = "#ccc";
+    // ctx.lineWidth = 1;
+    // ctx.strokeRect(
+    //   PADDING_LEFT,
+    //   0,
+    //   CHART_WIDTH - PADDING_LEFT,
+    //   topContainerHeight,
+    // );
 
-    // Draw p-value
+    // // Draw std dev bars
+    // const overallMeanX = drawStdErrorBar(
+    //   ctx,
+    //   overallArr,
+    //   globalMin,
+    //   globalMax,
+    //   "#666",
+    //   topContainerHeight - 5,
+    //   title[1],
+    // );
+    // const highlightMeanX = drawStdErrorBar(
+    //   ctx,
+    //   highlightArr,
+    //   globalMin,
+    //   globalMax,
+    //   "#000",
+    //   topContainerHeight - 25,
+    //   title[0],
+    // );
+
+    // // Draw p-value
+    // if (pValue !== null) {
+    //   ctx.fillStyle = "#000";
+    //   ctx.font = "10px sans-serif";
+    //   ctx.textAlign = "left";
+    //   let displayP = "";
+    //   if (pValue < 1e-16) {
+    //     displayP = "p<1e-16";
+    //   } else {
+    //     displayP = `p=${pValue.toExponential(2)}`;
+    //   }
+    //   ctx.fillText(displayP, PADDING_LEFT + 5, topContainerHeight + 10);
+    // }
     if (pValue !== null) {
-      ctx.fillStyle = '#000';
-      ctx.font = '10px sans-serif';
-      ctx.textAlign = 'left';
-      let displayP = '';
+      ctx.save();
+      ctx.fillStyle = "#aaaaaa";
+      ctx.font = "10px sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+
+      let displayP = "";
       if (pValue < 1e-16) {
-        displayP = 'p<1e-16';
+        displayP = "p<1e-16";
       } else {
         displayP = `p=${pValue.toExponential(2)}`;
       }
-      ctx.fillText(displayP, PADDING_LEFT + 5, topContainerHeight + 10);
+
+      ctx.fillText(displayP, PADDING_LEFT + 4, PADDING_TOP + 4);
+      ctx.restore();
     }
+  }
+
+  function drawMeanLine(
+    ctx: CanvasRenderingContext2D,
+    mean: number,
+    totalMin: number,
+    totalMax: number,
+    color: string,
+  ) {
+    const range = totalMax - totalMin || 1;
+    const x =
+      PADDING_LEFT +
+      ((mean - totalMin) / range) *
+        (CHART_WIDTH - PADDING_LEFT - PADDING_RIGHT);
+
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = 0.9;
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(x, PADDING_TOP);
+    ctx.lineTo(x, CHART_HEIGHT - PADDING_BOTTOM);
+    ctx.stroke();
+    ctx.restore();
   }
 
   /**
@@ -329,48 +427,63 @@ const highlightMeanX = drawStdErrorBar(ctx, highlightArr, globalMin, globalMax, 
   function drawEmptyChart(message: string) {
     if (!ctx) return;
     ctx.clearRect(0, 0, CHART_WIDTH, CHART_HEIGHT);
-    ctx.fillStyle = '#999';
-    ctx.font = '12px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.fillStyle = "#999";
+    ctx.font = "12px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
     ctx.fillText(message, CHART_WIDTH / 2, CHART_HEIGHT / 2);
   }
 
   /**
    * Helper to create the striped pattern for comparison bars.
    */
-  function createStripedPattern(ctx: CanvasRenderingContext2D, color = HIGHLIGHT_COLOR) {
-    const size = 8;
-    const patternCanvas = document.createElement('canvas');
-    patternCanvas.width = size;
-    patternCanvas.height = size;
-    const pctx = patternCanvas.getContext('2d');
-    if (!pctx) return null;
+  // function createStripedPattern(
+  //   ctx: CanvasRenderingContext2D,
+  //   color = HIGHLIGHT_COLOR,
+  // ) {
+  //   const size = 8;
+  //   const patternCanvas = document.createElement("canvas");
+  //   patternCanvas.width = size;
+  //   patternCanvas.height = size;
+  //   const pctx = patternCanvas.getContext("2d");
+  //   if (!pctx) return null;
 
-    pctx.strokeStyle = color;
-    pctx.lineWidth = 1;
-    pctx.beginPath();
-    pctx.moveTo(0, size);
-    pctx.lineTo(size, 0);
-    pctx.stroke();
+  //   pctx.strokeStyle = color;
+  //   pctx.lineWidth = 1;
+  //   pctx.beginPath();
+  //   pctx.moveTo(0, size);
+  //   pctx.lineTo(size, 0);
+  //   pctx.stroke();
 
-    return ctx.createPattern(patternCanvas, 'repeat');
-  }
+  //   return ctx.createPattern(patternCanvas, "repeat");
+  // }
 
   /**
    * Helper to draw the mean and standard deviation bar.
    */
-  function drawStdErrorBar(ctx: CanvasRenderingContext2D, values: number[], totalMin: number, totalMax: number, color: string, y: number, label) {
+  function drawStdErrorBar(
+    ctx: CanvasRenderingContext2D,
+    values: number[],
+    totalMin: number,
+    totalMax: number,
+    color: string,
+    y: number,
+    label,
+  ) {
     if (!ctx || !values || values.length < 2) return 0;
 
     const mean = jStat.mean(values);
     const stdDev = jStat.stdev(values, true); // true for sample stdev
 
     // Prevent division by zero if all values are identical
-    const range = (totalMax - totalMin) || 1; 
+    const range = totalMax - totalMin || 1;
 
-    const meanX = PADDING_LEFT + ((mean - totalMin) / range) * (CHART_WIDTH - PADDING_LEFT - PADDING_RIGHT);
-    const stdDevPx = (stdDev / range) * (CHART_WIDTH - PADDING_LEFT - PADDING_RIGHT);
+    const meanX =
+      PADDING_LEFT +
+      ((mean - totalMin) / range) *
+        (CHART_WIDTH - PADDING_LEFT - PADDING_RIGHT);
+    const stdDevPx =
+      (stdDev / range) * (CHART_WIDTH - PADDING_LEFT - PADDING_RIGHT);
 
     ctx.strokeStyle = color;
     ctx.lineWidth = 1;
@@ -393,17 +506,20 @@ const highlightMeanX = drawStdErrorBar(ctx, highlightArr, globalMin, globalMax, 
     ctx.fill();
 
     // Draw top plot labels
-    ctx.font = '10px sans-serif';
-    ctx.textBaseline = 'middle';
-    
+    ctx.font = "10px sans-serif";
+    ctx.textBaseline = "middle";
+
     ctx.fillStyle = color;
-    ctx.textAlign = 'center';
+    ctx.textAlign = "center";
     let textMargin = 45;
-    let textX = Math.max(PADDING_LEFT + textMargin, Math.min(CHART_WIDTH - PADDING_RIGHT - textMargin, meanX));
+    let textX = Math.max(
+      PADDING_LEFT + textMargin,
+      Math.min(CHART_WIDTH - PADDING_RIGHT - textMargin, meanX),
+    );
     ctx.fillText(
       truncateText(`avg(${label})=${Math.floor(mean * 100) / 100}`),
       textX,
-      y - errorBarHeight * 2.5
+      y - errorBarHeight * 2.5,
     );
     return meanX;
   }
@@ -412,19 +528,19 @@ const highlightMeanX = drawStdErrorBar(ctx, highlightArr, globalMin, globalMax, 
    * Helper to truncate long legend text.
    */
   function truncateText(text: string, maxChars = 15) {
-      const match = text.match(/^avg\((.*?)\)=(.*)$/);
-      if (!match) {
-        return text.length > maxChars ? text.slice(0, maxChars) + "…" : text;
-      }
+    const match = text.match(/^avg\((.*?)\)=(.*)$/);
+    if (!match) {
+      return text.length > maxChars ? text.slice(0, maxChars) + "…" : text;
+    }
 
-      let inside = match[1];
-      const after = match[2];
+    let inside = match[1];
+    const after = match[2];
 
-      if (inside.length > maxChars) {
-        inside = inside.slice(0, maxChars) + "…";
-      }
+    if (inside.length > maxChars) {
+      inside = inside.slice(0, maxChars) + "…";
+    }
 
-      return `avg(${inside})=${after}`;
+    return `avg(${inside})=${after}`;
   }
 
   // --- Lifecycle and Reactivity ---
@@ -436,7 +552,6 @@ const highlightMeanX = drawStdErrorBar(ctx, highlightArr, globalMin, globalMax, 
   $: if (canvasEl && highlightArr && overallArr && title) {
     drawChart();
   }
-
 </script>
 
 <canvas bind:this={canvasEl} style="margin-top: 20px;" />

@@ -173,7 +173,7 @@
   // store to track filter states
   const promptFilterStatus = writable({});
   const margin = { top: 20, right: 0, bottom: 30, left: 50 };
-  const height = 200;
+  const height = 150;
   let yScale = d3
     .scaleLinear()
     .domain([0, 100])
@@ -230,7 +230,7 @@
   let playbackIndex = 0;
   let playbackTimer = null;
   let playbackSpeed = 1; // Default 1x speed (real-time)
-  const SPEED_OPTIONS = [1, 5, 100]; // Available speed options: 1x, 5x, 100x
+  const SPEED_OPTIONS = [10, 50, 100]; // Available speed options
   const icons = [
     `${base}/play.svg`,
     `${base}/doubleplay.svg`,
@@ -3633,31 +3633,31 @@
 
   function handlePointSelected(e, sessionId) {
     const d = e.detail;
-    // clickSession.update((currentSession) => {
-    //   if (currentSession.sessionId !== sessionId) return currentSession;
-    //   const textElements = d.currentText.split("").map((char, index) => ({
-    //     text: char,
-    //     textColor: d.currentColor?.[index] ?? "#000",
-    //   }));
-    //   const chartData = currentSession.chartData.map((point) => ({
-    //     ...point,
-    //     opacity: point.index > d.index ? 0.01 : 1,
-    //   }));
-    //   const similarityData = currentSession.totalSimilarityData;
-    //   const endIndex = similarityData.findIndex(
-    //     (item) => d.percentage < item.end_progress * 100
-    //   );
-    //   const selectedData =
-    //     endIndex === -1 ? similarityData : similarityData.slice(0, endIndex);
+    clickSession.update((currentSession) => {
+      if (currentSession.sessionId !== sessionId) return currentSession;
+      const textElements = d.currentText.split("").map((char, index) => ({
+        text: char,
+        textColor: d.currentColor?.[index] ?? "#000",
+      }));
+      const chartData = currentSession.chartData.map((point) => ({
+        ...point,
+        opacity: point.index > d.index ? 0.01 : 1,
+      }));
+      const similarityData = currentSession.totalSimilarityData;
+      const endIndex = similarityData.findIndex(
+        (item) => d.percentage < item.end_progress * 100,
+      );
+      const selectedData =
+        endIndex === -1 ? similarityData : similarityData.slice(0, endIndex);
 
-    //   return {
-    //     ...currentSession,
-    //     textElements,
-    //     currentTime: d.time,
-    //     chartData,
-    //     similarityData: selectedData,
-    //   };
-    // });
+      return {
+        ...currentSession,
+        textElements,
+        currentTime: d.time,
+        chartData,
+        similarityData: selectedData,
+      };
+    });
     let idx = findIndexFromTime(get(clickSession)?.chartData, d.time);
     applyPlaybackFrame(sessionId, idx);
     if (isPlaying) schedulePlayback(sessionId, idx);
@@ -4161,7 +4161,29 @@
 
     $showResultCount = Math.min(targetShowCount, $patternDataList.length);
   }
-  
+
+  function stepBackward() {
+    const session = get(clickSession);
+    if (!session || !session.chartData?.length) return;
+    const STEP = 10; // s
+    const currentTime = session.currentTime || 0;
+    const targetTime = Math.max(0, currentTime - STEP / 60);
+    const idx = findIndexFromTime(session.chartData, targetTime);
+    playbackIndex = idx;
+    applyPlaybackFrame(session.sessionId, idx);
+  }
+
+  function stepForward() {
+    const session = get(clickSession);
+    if (!session || !session.chartData?.length) return;
+    const STEP = 10; // s
+    const currentTime = session.currentTime || 0;
+    const maxTime = session.time100 || 0;
+    const targetTime = Math.min(maxTime, currentTime + STEP / 60);
+    const idx = findIndexFromTime(session.chartData, targetTime);
+    playbackIndex = idx;
+    applyPlaybackFrame(session.sessionId, idx);
+  }
 </script>
 
 <div class="App">
@@ -4186,16 +4208,6 @@
           </div>
         </div>
       </div>
-      <div
-        class="chart-explanation"
-        style="font-size: 13px; align-items: center; display: flex;"
-      >
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        <span class="triangle-text-accept">▼</span> Accept AI suggestion &nbsp;
-        <span class="triangle-text-reject">▼</span> Reject AI suggestion &nbsp;
-        <span class="user-line">●</span> User &nbsp;
-        <span class="api-line">●</span> AI
-      </div>
 
       <!-- Search Box -->
       <div
@@ -4214,7 +4226,7 @@
             border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 13px;
-            width: 200px;
+            width: 1750x;
             outline: none;
           "
         />
@@ -4329,7 +4341,7 @@
             id="dataset-select"
             bind:value={selectedDataset}
             on:change={handleDatasetChange}
-            style="width: min-content;"
+            style="width: 150px;"
           >
             {#each datasets as dataset}
               <option value={dataset.name}>{dataset.name}</option>
@@ -5632,162 +5644,135 @@
                       class="session-summary"
                       id="summary-{$clickSession.sessionId}"
                     >
-                      <h3>Session Summary</h3>
                       <div class="summary-container">
-                        <div class="totalText">
-                          {$clickSession.summaryData
-                            ? `Total Text: ${$clickSession.summaryData.totalProcessedCharacters} characters`
-                            : ""}
+                        <div class="summary-item">
+                          <div class="label">Total text</div>
+                          <div class="value">
+                            {$clickSession.summaryData
+                              ?.totalProcessedCharacters || 0}
+                          </div>
+                          <div class="label">chars</div>
                         </div>
-                        <div class="totalInsertions">
-                          {$clickSession.summaryData
-                            ? `Insertions: ${$clickSession.summaryData.totalInsertions}`
-                            : ""}
+
+                        <div class="summary-item green">
+                          <div class="label">Insertions</div>
+                          <div class="value">
+                            {$clickSession.summaryData?.totalInsertions || 0}
+                          </div>
+                          <div class="label">chars</div>
                         </div>
-                        <div class="totalDeletions">
-                          {$clickSession.summaryData
-                            ? `Deletions: ${$clickSession.summaryData.totalDeletions}`
-                            : ""}
+
+                        <div class="summary-item red">
+                          <div class="label">Deletions</div>
+                          <div class="value">
+                            {$clickSession.summaryData?.totalDeletions || 0}
+                          </div>
+                          <div class="label">chars</div>
                         </div>
-                        <div class="totalSuggestions">
-                          {$clickSession.summaryData
-                            ? `Suggestions: ${$clickSession.summaryData.totalSuggestions}`
-                            : ""}
+
+                        <div class="summary-item blue">
+                          <div class="label">Suggestions</div>
+                          <div class="value">
+                            {$clickSession.summaryData?.totalSuggestions || 0}
+                          </div>
+                          <div class="label">total</div>
                         </div>
                       </div>
                     </div>
-
-                    <!-- Chart Axis Controls -->
-                    <div class="chart-axis-controls">
-                      <div class="axis-control-row">
-                        <label>
-                          <span class="control-label">BlockEvent X:</span>
-                          <select bind:value={barChartXAxis}>
-                            {#each availableBarChartFields as field}
-                              <option value={field.key}>{field.label}</option>
-                            {/each}
-                          </select>
-                        </label>
-                        <label>
-                          <span class="control-label">Event X:</span>
-                          <select bind:value={lineChartXAxis}>
-                            {#each availableLineChartFields as field}
-                              <option value={field.key}>{field.label}</option>
-                            {/each}
-                          </select>
-                        </label>
-                      </div>
-                      <div class="axis-control-row">
-                        <label>
-                          <span class="control-label">BlockEvent Y:</span>
-                          <select bind:value={barChartYAxis}>
-                            {#each availableBarChartFields as field}
-                              <option value={field.key}>{field.label}</option>
-                            {/each}
-                          </select>
-                        </label>
-                        <label>
-                          <span class="control-label">Event Y:</span>
-                          <select bind:value={lineChartYAxis}>
-                            {#each availableLineChartFields as field}
-                              <option value={field.key}>{field.label}</option>
-                            {/each}
-                          </select>
-                        </label>
-                      </div>
-                    </div>
-
-                    <div class="chart-container-split">
-                      <!-- Left: BarChart (Semantic Similarity) -->
-                      <div class="chart-section">
-                        <h4 class="chart-title">
+                    <div style="display: flex; justify-content: space-between;">
+                      <div class="chart-container-split">
+                        <!-- Left: BarChart (Semantic Similarity) -->
+                        <div class="chart-section">
+                          <!-- <h4 class="chart-title">
                           {(barChartAttributeConfig[barChartXAxis]?.label ||
                             barChartXAxis) +
                             " vs " +
                             (barChartAttributeConfig[barChartYAxis]?.label ||
                               barChartYAxis)}
-                        </h4>
-                        <div
-                          class="chart-wrapper-independent"
-                          role="application"
-                          aria-label="Bar chart with pan and zoom"
-                          on:wheel={handleChartZoom}
-                          on:mousedown={handleBarChartMouseDown}
-                          on:mousemove={handleBarChartMouseMove}
-                          on:mouseup={handleBarChartMouseUp}
-                          on:mouseleave={handleBarChartMouseUp}
-                          style="cursor: {barDragState
-                            ? 'grabbing'
-                            : selectionMode
-                              ? 'default'
-                              : 'grab'}"
-                        >
-                          {#if $clickSession.similarityData && Object.keys(barChartAttributeConfig).length > 0}
-                            <BarChartY
-                              sessionId={$clickSession.sessionId}
-                              similarityData={$clickSession.similarityData}
-                              {yScale}
-                              {height}
-                              xAxisField={barChartXAxis}
-                              yAxisField={barChartYAxis}
-                              attributeConfig={barChartAttributeConfig}
-                              bind:zoomTransform={
-                                zoomTransforms[$clickSession.sessionId]
-                              }
-                              {selectionMode}
-                              bind:sharedSelection
-                              on:selectionChanged={handleSelectionChanged}
-                              on:selectionCleared={handleSelectionCleared}
-                              bind:this={
-                                chartRefs[$clickSession.sessionId + "-barChart"]
-                              }
-                              on:chartLoaded={handleChartLoaded}
-                              bind:xScaleBarChartFactor
-                            />
-                          {/if}
+                        </h4> -->
+                          <div
+                            class="chart-wrapper-independent"
+                            role="application"
+                            aria-label="Bar chart with pan and zoom"
+                            on:wheel={handleChartZoom}
+                            on:mousedown={handleBarChartMouseDown}
+                            on:mousemove={handleBarChartMouseMove}
+                            on:mouseup={handleBarChartMouseUp}
+                            on:mouseleave={handleBarChartMouseUp}
+                            style="cursor: {barDragState
+                              ? 'grabbing'
+                              : selectionMode
+                                ? 'default'
+                                : 'grab'}"
+                          >
+                            {#if $clickSession.similarityData && Object.keys(barChartAttributeConfig).length > 0}
+                              <BarChartY
+                                sessionId={$clickSession.sessionId}
+                                similarityData={$clickSession.similarityData}
+                                {yScale}
+                                {height}
+                                xAxisField={barChartXAxis}
+                                yAxisField={barChartYAxis}
+                                attributeConfig={barChartAttributeConfig}
+                                bind:zoomTransform={
+                                  zoomTransforms[$clickSession.sessionId]
+                                }
+                                {selectionMode}
+                                bind:sharedSelection
+                                on:selectionChanged={handleSelectionChanged}
+                                on:selectionCleared={handleSelectionCleared}
+                                bind:this={
+                                  chartRefs[
+                                    $clickSession.sessionId + "-barChart"
+                                  ]
+                                }
+                                on:chartLoaded={handleChartLoaded}
+                                bind:xScaleBarChartFactor
+                              />
+                            {/if}
+                          </div>
                         </div>
-                      </div>
 
-                      <!-- Right: LineChart (Writing Progress) -->
-                      <div class="chart-section">
-                        <h4 class="chart-title">
+                        <!-- Right: LineChart (Writing Progress) -->
+                        <div class="chart-section">
+                          <!-- <h4 class="chart-title">
                           {(lineChartAttributeConfig[lineChartXAxis]?.label ||
                             lineChartXAxis) +
                             " vs " +
                             (lineChartAttributeConfig[lineChartYAxis]?.label ||
                               lineChartYAxis)}
-                        </h4>
-                        <div
-                          class="chart-wrapper-independent"
-                          on:wheel={handleChartZoom}
-                        >
-                          <LineChart
-                            sessionId={$clickSession.sessionId}
-                            bind:this={chartRefs[$clickSession.sessionId]}
-                            chartData={$clickSession.chartData}
-                            similarityData={$clickSession.similarityData}
-                            paragraphColor={$clickSession.paragraphColor}
-                            on:pointSelected={(e) =>
-                              handlePointSelected(e, $clickSession.sessionId)}
-                            {yScale}
-                            {height}
-                            xAxisField={lineChartXAxis}
-                            yAxisField={lineChartYAxis}
-                            attributeConfig={lineChartAttributeConfig}
-                            bind:zoomTransform={
-                              zoomTransforms[$clickSession.sessionId]
-                            }
-                            selectionMode={false}
-                            bind:sharedSelection
-                            on:selectionChanged={handleSelectionChanged}
-                            on:selectionCleared={handleSelectionCleared}
-                            bind:xScaleLineChartFactor
-                            bind:brushIsX
-                          />
-                        </div>
+                        </h4> -->
+                          <div
+                            class="chart-wrapper-independent"
+                            on:wheel={handleChartZoom}
+                          >
+                            <LineChart
+                              sessionId={$clickSession.sessionId}
+                              bind:this={chartRefs[$clickSession.sessionId]}
+                              chartData={$clickSession.chartData}
+                              similarityData={$clickSession.similarityData}
+                              paragraphColor={$clickSession.paragraphColor}
+                              on:pointSelected={(e) =>
+                                handlePointSelected(e, $clickSession.sessionId)}
+                              {yScale}
+                              {height}
+                              xAxisField={lineChartXAxis}
+                              yAxisField={lineChartYAxis}
+                              attributeConfig={lineChartAttributeConfig}
+                              bind:zoomTransform={
+                                zoomTransforms[$clickSession.sessionId]
+                              }
+                              selectionMode={false}
+                              bind:sharedSelection
+                              on:selectionChanged={handleSelectionChanged}
+                              on:selectionCleared={handleSelectionCleared}
+                              bind:xScaleLineChartFactor
+                              bind:brushIsX
+                            />
+                          </div>
 
-                        <!-- Brush toggle: Progress/Time -->
-                        <!-- {#if selectionMode}
+                          <!-- Brush toggle: Progress/Time -->
+                          <!-- {#if selectionMode}
                           <div class="brush-toggle-container">
                             <span class="label" class:active={!brushIsX}
                               >Progress</span
@@ -5804,6 +5789,78 @@
                             >
                           </div>
                         {/if} -->
+                        </div>
+                      </div>
+                      <div>
+                        <div
+                          class="chart-explanation"
+                          style="font-size: 12px; align-items: center; display: flex;"
+                        >
+                          <div style="display: flex;">
+                            <span class="triangle-text-accept">▼</span> Accept AI suggestion
+                          </div>
+                          <div style="display: flex;">
+                            <span class="triangle-text-reject">▼</span> Reject AI Suggestions
+                          </div>
+                          <div style="display: flex;">
+                            <span class="user-line">●</span> User
+                            <span class="api-line">●</span> AI
+                          </div>
+                        </div>
+                        <!-- Chart Axis Controls -->
+                        <div class="chart-axis-controls">
+                          <!-- Block -->
+                          <div class="axis-group">
+                            <div class="axis-control-row">
+                              <label class="axis-item">
+                                <span class="control-label">Block X: </span>
+                                <select bind:value={barChartXAxis}>
+                                  {#each availableBarChartFields as field}
+                                    <option value={field.key}
+                                      >{field.label}</option
+                                    >
+                                  {/each}
+                                </select>
+                              </label>
+                              <label class="axis-item">
+                                <span class="control-label">Block Y: </span>
+                                <select bind:value={barChartYAxis}>
+                                  {#each availableBarChartFields as field}
+                                    <option value={field.key}
+                                      >{field.label}</option
+                                    >
+                                  {/each}
+                                </select>
+                              </label>
+                            </div>
+                          </div>
+
+                          <!-- Event -->
+                          <div class="axis-group">
+                            <div class="axis-control-row">
+                              <label class="axis-item">
+                                <span class="control-label">Event X: </span>
+                                <select bind:value={lineChartXAxis}>
+                                  {#each availableLineChartFields as field}
+                                    <option value={field.key}
+                                      >{field.label}</option
+                                    >
+                                  {/each}
+                                </select>
+                              </label>
+                              <label class="axis-item">
+                                <span class="control-label">Event Y: </span>
+                                <select bind:value={lineChartYAxis}>
+                                  {#each availableLineChartFields as field}
+                                    <option value={field.key}
+                                      >{field.label}</option
+                                    >
+                                  {/each}
+                                </select>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -5838,24 +5895,48 @@
                         >
                       </div>
                       {#if $clickSession?.chartData?.length}
-                        <div class="playback-controls">
-                          <button
-                            class="play-button"
-                            on:click={togglePlayback}
-                            style="width:8.5ch; text-align:center;"
-                          >
-                            {isPlaying ? "Pause" : "Play"}
-                          </button>
-                          <button
-                            class="speed-button"
-                            on:click={togglePlaybackSpeed}
-                          >
-                            <img
-                              src={icons[SPEED_OPTIONS.indexOf(playbackSpeed)]}
-                              alt="Playback speed"
-                              height="12"
-                            />
-                          </button>
+                        <div class="playback-panel">
+                          <div class="playback-controls">
+                            <button
+                              class="icon-button"
+                              on:click={stepBackward}
+                              aria-label="Previous"
+                            >
+                              ⏮
+                            </button>
+
+                            <button
+                              class="play-button"
+                              on:click={togglePlayback}
+                              aria-label="Play or pause"
+                            >
+                              {#if isPlaying}
+                                ❚❚
+                              {:else}
+                                ▶
+                              {/if}
+                            </button>
+
+                            <button
+                              class="icon-button"
+                              on:click={stepForward}
+                              aria-label="Next"
+                            >
+                              ⏭
+                            </button>
+                          </div>
+
+                          <div class="speed-controls">
+                            {#each SPEED_OPTIONS as speed}
+                              <button
+                                class:selected={playbackSpeed === speed}
+                                class="speed-pill"
+                                on:click={() => (playbackSpeed = speed)}
+                              >
+                                {speed}×
+                              </button>
+                            {/each}
+                          </div>
                         </div>
                       {/if}
                     </div>
@@ -5961,13 +6042,14 @@
     white-space: pre-wrap;
     text-align: left;
     width: 100%;
-    margin-top: 40px;
+    margin-top: 30px;
     box-sizing: border-box;
   }
 
   .content-box {
     flex: 1;
     display: flex;
+    position: relative;
     flex-direction: column;
     height: auto;
     min-height: 500px;
@@ -5977,13 +6059,24 @@
     padding: 15px;
   }
 
+  .content-box:first-child::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 50%;
+    background: #e5e7eb;
+  }
+
   .text-container {
     flex: 1;
     width: 100%;
     max-height: 100%;
     overflow-y: auto;
     scrollbar-gutter: stable;
-    margin-top: 20px;
+    margin-top: 4px;
   }
 
   .text-span {
@@ -6025,7 +6118,7 @@
     border-radius: 20px;
     height: var(--progHeight);
     outline: none;
-    padding: 6px 0;
+    /* padding: 6px 0; */
     position: relative;
     z-index: 1;
   }
@@ -6098,42 +6191,6 @@
     white-space: nowrap;
   }
 
-  .play-button {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 8px;
-    background: var(--progColor);
-    color: white;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-  }
-
-  .play-button:hover {
-    opacity: 0.9;
-    transform: scale(1.02);
-  }
-
-  .speed-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 12px;
-    border: 2px solid var(--progColor);
-    border-radius: 8px;
-    background: #ff8c80;
-    color: var(--progColor);
-    cursor: pointer;
-    font-weight: 600;
-    min-width: 50px;
-    transition: all 0.2s ease;
-  }
-
-  .speed-button:hover {
-    opacity: 0.9;
-    transform: scale(1.02);
-  }
-
   progress {
     width: 600px;
     appearance: none;
@@ -6171,30 +6228,12 @@
 
   .summary-container {
     display: flex;
-    justify-content: space-between;
+    /* justify-content: space-between; */
   }
 
   .session-summary {
     font-size: 12px;
     line-height: 1.1;
-  }
-
-  .session-summary h3 {
-    margin-bottom: 2px;
-    font-size: 12px;
-  }
-
-  .session-summary div {
-    margin-bottom: 2px;
-  }
-
-  .totalText,
-  .totalInsertions,
-  .totalDeletions,
-  .totalSuggestions {
-    display: inline-block;
-    white-space: nowrap;
-    margin-right: 15px;
   }
 
   .brand-section {
@@ -6254,8 +6293,12 @@
   }
 
   .chart-explanation {
-    font-size: 11px;
     display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    margin-top: 20px;
   }
 
   .chart-explanation span {
@@ -6327,50 +6370,47 @@
     display: table-row;
   }
 
-  .chart-container {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: visible;
-  }
-
-  .chart-wrapper {
-    display: flex;
-    align-items: flex-start;
-    padding-right: 35px;
-    transform: scale(1.25);
-    transform-origin: center top;
-  }
-
   /* Chart axis controls */
   .chart-axis-controls {
+    display: inline-grid;
     max-width: 700px;
-    padding: 3px 15px;
-    background: #f5f5f5;
-    border-radius: 8px;
-    margin: 0 auto 5px;
+    padding: 5px 10px 0;
+    justify-content: start;
+    align-content: start;
+    margin: 0;
+    row-gap: 12px;
+    margin-top: 10px;
+  }
+
+  .axis-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
+
+  .axis-group {
+    display: grid;
+    row-gap: 6px;
   }
 
   .axis-control-row {
-    display: flex;
-    gap: 70px;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    column-gap: 8px;
+    justify-content: start;
   }
-
   .axis-control-row label {
     display: flex;
-    align-items: center;
-    gap: 0px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 
   .control-label {
-    font-size: 10px;
-    font-weight: 600;
-    color: #333;
     white-space: nowrap;
+    text-align: left;
   }
 
   .axis-control-row select {
@@ -6396,20 +6436,19 @@
   /* New split layout for charts */
   .chart-container-split {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
+    justify-content: flex-start;
     max-width: 700px;
     padding: 5px 10px 0;
-    margin: 0 auto;
+    /* margin: 0 auto; */
   }
 
   .chart-section {
     display: flex;
     flex-direction: column;
-    border: 1px solid #e0e0e0;
+    /* border: 1px solid #e0e0e0; */
     border-radius: 8px;
     padding: 10px;
-    background: #fafafa;
+    /* background: #fafafa; */
   }
 
   .chart-title {
@@ -6425,70 +6464,6 @@
     justify-content: center;
     align-items: center;
     overflow: visible;
-  }
-
-  .brush-toggle-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin: 8px auto 0;
-    width: 100%;
-  }
-
-  .brush-toggle-container .label {
-    font-size: 15px;
-    color: #777;
-    user-select: none;
-    font-weight: normal;
-  }
-
-  .brush-toggle-container .label.active {
-    color: black;
-    font-weight: bold;
-  }
-
-  .brush-toggle-container .switch {
-    position: relative;
-    display: inline-block;
-    width: 48px;
-    height: 26px;
-  }
-
-  .brush-toggle-container .switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  .brush-toggle-container input:checked + .slider {
-    background-color: #ffbbcc;
-  }
-
-  .brush-toggle-container input:checked + .slider::before {
-    transform: translateX(22px);
-  }
-
-  .brush-toggle-container .slider {
-    position: absolute;
-    cursor: pointer;
-    inset: 0;
-    background-color: #ffbbcc;
-    transition: 0.2s;
-    border-radius: 30px;
-  }
-
-  .brush-toggle-container .slider::before {
-    position: absolute;
-    content: "";
-    height: 22px;
-    width: 22px;
-    left: 2px;
-    bottom: 2px;
-    background-color: white;
-    transition: 0.2s;
-    border-radius: 50%;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
   }
 
   .pattern-search-panel {
