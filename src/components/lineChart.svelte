@@ -48,7 +48,7 @@
   let svgContainer: SVGSVGElement;
   let width = 300;
   export let height;
-  const margin = { top: 20, right: 50, bottom: 30, left: 0 };
+  const margin = { top: 20, right: 0, bottom: 30, left: 50 };
 
   let xScale: any;
   export let yScale;
@@ -161,10 +161,10 @@
   }
 
   function getCircleOpacity(d) {
-    // if (!selectionMode) {
-    //   // original logic
-    //   return selectedPoint === d || hoveredPoint === d ? 1 : d.opacity;
-    // }
+    if (!selectionMode) {
+      // original logic
+      return selectedPoint === d || hoveredPoint === d ? 1 : d.opacity;
+    }
 
     if (!sharedSelection) {
       // selectionMode active but no brush yet
@@ -746,7 +746,7 @@
     if (!xScale || !newYScale || !xAxisG || !yAxisG) return;
 
     const xAxis = d3.axisBottom(zoomTransform.rescaleX(xScale)).ticks(5);
-    const yAxis = d3.axisRight(zoomTransform.rescaleY(newYScale)).ticks(5);
+    const yAxis = d3.axisLeft(zoomTransform.rescaleY(newYScale)).ticks(5);
 
     d3.select(xAxisG).call(xAxis);
     d3.select(yAxisG).call(yAxis);
@@ -795,7 +795,7 @@
 
   <g transform={`translate(${margin.left},${margin.top})`}>
     <g clip-path="url(#clip)">
-      {#each paragraphColor as d}
+      <!-- {#each paragraphColor as d}
         <rect
           x={zoomTransform.applyX(scaledX(d.xMin))}
           width={zoomTransform.k * (scaledX(d.xMax) - scaledX(d.xMin))}
@@ -803,7 +803,7 @@
           height={zoomTransform.k * (scaledY(d.yMin) - scaledY(d.yMax))}
           fill={d.backgroundColor}
         />
-      {/each}
+      {/each} -->
 
       <g>
         {#each processedData.filter((d) => !d.isSuggestionOpen) as d (d.index)}
@@ -851,18 +851,18 @@
     >
       {attributeConfig[xAxisField]?.label ?? "X"}
     </text>
-    <g class="y-axis" bind:this={yAxisG} transform="translate({chartWidth}, 0)"
-    ></g>
-    <text
-      transform="rotate(-90)"
-      x={-chartHeight / 2}
-      y={width - 10}
-      text-anchor="middle"
-      font-size="10px"
-      fill="black"
-    >
-      {attributeConfig[yAxisField]?.label ?? "Y"}
-    </text>
+    <g class="y-axis" bind:this={yAxisG} transform="translate(0, 0)"></g>
+
+<text
+  transform="rotate(-90)"
+  x={-chartHeight / 2}
+  y={-30}
+  text-anchor="middle"
+  font-size="10px"
+  fill="black"
+>
+  {attributeConfig[yAxisField]?.label ?? "Y"}
+</text>
   </g>
 </svg>
 
