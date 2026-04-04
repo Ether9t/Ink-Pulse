@@ -5798,12 +5798,10 @@
                           style="font-size: 12px; align-items: center; display: flex;"
                         >
                           <div style="display: flex;">
-                            <span class="triangle-text-accept">▼</span> Accept AI
-                            suggestion
+                            <span class="triangle-text-accept">▼</span> Accept AI suggestion
                           </div>
                           <div style="display: flex;">
-                            <span class="triangle-text-reject">▼</span> Reject AI
-                            Suggestions
+                            <span class="triangle-text-reject">▼</span> Reject AI Suggestions
                           </div>
                           <div style="display: flex;">
                             <span class="user-line">●</span> User
