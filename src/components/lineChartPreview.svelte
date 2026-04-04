@@ -431,7 +431,7 @@
     <g clip-path="url(#clip_preview)">
       <g>
         <!-- Selected range highlight -->
-        {#if hasSelection}
+        <!-- {#if hasSelection}
           {#if showTimeMarkers}
             {#each timeMarkers as marker}
               <line
@@ -441,7 +441,6 @@
                 y2={chartHeight}
                 stroke="#000000"
                 stroke-width="1"
-                stroke-dasharray="3,3"
                 vector-effect="non-scaling-stroke"
                 pointer-events="none"
               />
@@ -456,13 +455,12 @@
                 y2={scaledY(marker)}
                 stroke="#000000"
                 stroke-width="1"
-                stroke-dasharray="3,3"
                 vector-effect="non-scaling-stroke"
                 pointer-events="none"
               />
             {/each}
           {/if}
-        {/if}
+        {/if} -->
 
         <!-- {#each paragraphColor as d}
           <rect

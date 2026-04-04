@@ -486,10 +486,6 @@
   opacity: 0.9;
 }
 
-* {
-  font-family: "Poppins", sans-serif;
-}
-
 .zoom-reset-btn {
   display: block;
   margin: 10px auto;
