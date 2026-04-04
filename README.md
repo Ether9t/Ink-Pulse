@@ -4,7 +4,7 @@ The repository is for InkPulse, a visual analytics system that supports the iden
 
 The introduction video can be found [here](https://github.com/user-attachments/assets/52fd3243-0cf5-4943-a456-d8fd09c1538b)
 
-https://github.com/user-attachments/assets/52fd3243-0cf5-4943-a456-d8fd09c1538b
+https://github.com/user-attachments/assets/c4ca8a7d-f225-4a33-87ab-cf1d01e4ca71
 ## Table of Contents
 
 - [InkPulse](#inkpulse)
