@@ -982,7 +982,7 @@
       {/each}
     </div>
   {/if}
-  <ul class="filter-list">
+  <!-- <ul class="filter-list">
     {#each result.filters as filter}
       <li>
         {filter.relation}
@@ -992,7 +992,7 @@
         {filter.r_position ? `(rhs: ${filter.r_position})` : ""}
       </li>
     {/each}
-  </ul>
+  </ul> -->
 </div>
 
 {#if showSavedMessage}
@@ -1005,10 +1005,10 @@
   .settings-btn {
     background-color: transparent;
     border: none;
-    font-size: 24px;
+    font-size: 20px;
     color: #333;
     cursor: pointer;
-    padding: 5px;
+    /* padding: 5px; */
     border-radius: 6px;
     transition: all 0.2s ease;
     position: relative;
@@ -1052,6 +1052,7 @@
     padding: 0.5rem;
     border-radius: 8px 8px 0 0;
     height: 10px;
+    margin-bottom: 4px;
   }
 
   .chat-content {

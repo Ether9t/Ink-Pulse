@@ -36,11 +36,11 @@
   // const HIGHLIGHT_COLOR = "#999999"; // Color for the 'data' group
   const GRAY = "#999999";
   const PURPLE = "#7B52AB";
-  const GRAY_ALPHA = 0.55;
-  const PURPLE_ALPHA = 0.65;
+  const GRAY_ALPHA = 0.35;
+  const PURPLE_ALPHA = 0.4;
   const PADDING_LEFT = 40;
   const PADDING_BOTTOM = 45;
-  const PADDING_TOP = 40;
+  const PADDING_TOP = 20;
   const PADDING_RIGHT = 0;
   const CHART_WIDTH = 250;
   const CHART_HEIGHT = 175;
@@ -554,4 +554,4 @@
   }
 </script>
 
-<canvas bind:this={canvasEl} style="margin-top: 20px;" />
+<canvas bind:this={canvasEl} />

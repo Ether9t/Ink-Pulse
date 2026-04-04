@@ -34,8 +34,8 @@
   $: patternSessionIds = patternSessions.map((s) => s.sessionId);
 
   // const NOWColor = "#999999";
-  const GRAY = "#999999";
-  const PURPLE = "#7B52AB";
+  const GRAY = "#d1d5db";
+  const PURPLE = "#c4b5fd";
   // let scoreSummary = init.scoreSummary;
   // let percentageSummaryData = init.percentageSummaryData;
   // let percentageData = init.percentageData;
@@ -163,7 +163,7 @@
   }
 </script>
 
-<div class="pattern-detail-container">
+<div>
   <div class="pattern-detail-header">
     <button class="back-button" on:click={handleBack}> ← Back </button>
     <h2>Pattern "{pattern?.name}" Details</h2>
@@ -209,7 +209,7 @@
 
   <div class="pattern-item">
     <div class="pattern-header">
-      <h5>Session: {pattern.searchDetail.sessionId.slice(0, 4)}</h5>
+      <h5 style="margin: 0 0 4px 0;">Session: {pattern.searchDetail.sessionId.slice(0, 4)}</h5>
     </div>
     <div class="pattern-details">
       <div>
@@ -227,7 +227,7 @@
     </div>
     <div style="display: flex; gap: 10px; align-items: flex-start;">
       <!-- Left: Bar Chart (Semantic Change) -->
-      <div class="pattern-chart-preview small-preview">
+      <div class="pattern-chart-preview small-preview" style="">
         <PatternChartPreview
           sessionId={pattern.searchDetail.sessionId}
           data={pattern.searchDetail.data}
@@ -462,15 +462,6 @@
 </div>
 
 <style>
-  .pattern-detail-container {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    /* padding: 20px; */
-    min-height: 100vh;
-    overflow: visible;
-  }
-
   .pattern-detail-header {
     display: flex;
     align-items: center;
@@ -604,26 +595,6 @@
     transition: all 0.2s ease;
   }
 
-  .btn-primary {
-    background-color: #007bff;
-    color: white;
-  }
-
-  .btn-primary:hover {
-    background-color: #0056b3;
-    transform: translateY(-1px);
-  }
-
-  .btn-secondary {
-    background-color: #6c757d;
-    color: white;
-  }
-
-  .btn-secondary:hover {
-    background-color: #545b62;
-    transform: translateY(-1px);
-  }
-
   .btn-danger {
     background-color: #dc3545;
     color: white;
@@ -645,7 +616,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
   }
 
   .pattern-details {
@@ -661,50 +631,6 @@
     border-radius: 4px;
     margin-top: 10px;
     background-color: white;
-  }
-
-  .readonly {
-    opacity: 0.5;
-  }
-
-  input:checked + .slider {
-    background-color: #ffbbcc;
-  }
-
-  input:checked + .slider::before {
-    transform: translateX(11px);
-  }
-
-  .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: 0.2s;
-    border-radius: 28px;
-  }
-
-  .slider::before {
-    position: absolute;
-    content: "";
-    height: 11px;
-    width: 11px;
-    left: 1.5px;
-    bottom: 1.5px;
-    background-color: white;
-    transition: 0.2s;
-    border-radius: 50%;
-  }
-
-  .switch {
-    position: relative;
-    display: inline-block; /* or inline-flex */
-    width: 26px; /* or whatever width you need */
-    height: 14px;
-    margin-left: 3px;
   }
 
   .charts-grid {
@@ -731,13 +657,5 @@
     width: 12px;
     height: 12px;
     border: 0.3px solid #000;
-  }
-
-  .striped {
-    background-image: repeating-linear-gradient(
-      45deg,
-      #000 0 2px,
-      transparent 2px 4px
-    );
   }
 </style>

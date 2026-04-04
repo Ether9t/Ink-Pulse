@@ -66,7 +66,7 @@
       source: d.source,
     }));
 
-    const margin = { top: 10, right: margin_right, bottom: 25, left: 40 };
+    const margin = { top: 10, right: margin_right, bottom: 35, left: 40 };
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
 
@@ -78,13 +78,13 @@
       .attr("height", "100%")
       .attr(
         "viewBox",
-        `0 0 ${chartWidth + margin.left + margin.right} ${chartHeight + margin.top + margin.bottom}`
+        `0 0 ${chartWidth + margin.left + margin.right} ${chartHeight + margin.top + margin.bottom}`,
       )
       .append("g")
       .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    const xScale = d3.scaleLinear().domain([1, 0]).range([0, chartWidth]);
-    const newyScale = d3.scaleLinear().domain([100, 0]).range([0, chartHeight]);
+    const xScale = d3.scaleLinear().domain([0, 100]).range([0, chartWidth]);
+    const newyScale = d3.scaleLinear().domain([0, 1]).range([chartHeight, 0]);
 
     svg
       .append("defs")
@@ -102,11 +102,11 @@
       .call(d3.axisBottom(xScale).ticks(0))
       .append("text")
       .attr("x", chartWidth / 2)
-      .attr("y", 20)
+      .attr("y", 16)
       .attr("fill", "black")
       .attr("text-anchor", "middle")
       .style("font-size", "8px")
-      .text("Semantic Change");
+      .text("Writing length");
 
     svg
       .append("g")
@@ -118,7 +118,7 @@
       .attr("fill", "black")
       .attr("text-anchor", "middle")
       .style("font-size", "8px")
-      .text("Writing length");
+      .text("Semantic Change");
 
     svg
       .selectAll(".bar-whole")
@@ -126,21 +126,19 @@
       .enter()
       .append("rect")
       .attr("class", "bar-whole")
-      .attr("y", (d) =>
-        newyScale(d.startProgress) < newyScale(d.endProgress)
-          ? newyScale(d.startProgress)
-          : newyScale(d.endProgress)
+      .attr("x", (d) =>
+        Math.min(xScale(d.startProgress), xScale(d.endProgress)),
       )
-      .attr("x", (d) => xScale(d.residual_vector_norm))
+      .attr("y", (d) => newyScale(d.residual_vector_norm))
       .attr("width", (d) => {
-        const x1 = xScale(d.residual_vector_norm);
-        const x2 = xScale(0);
-        return isNaN(x1) || isNaN(x2) ? 0 : x2 - x1;
+        const x1 = xScale(d.startProgress);
+        const x2 = xScale(d.endProgress);
+        return isNaN(x1) || isNaN(x2) ? 0 : Math.abs(x2 - x1);
       })
       .attr("height", (d) => {
-        const y1 = newyScale(d.startProgress);
-        const y2 = newyScale(d.endProgress);
-        return isNaN(y1) || isNaN(y2) ? 0 : Math.abs(y1 - y2);
+        const y1 = newyScale(d.residual_vector_norm);
+        const y2 = newyScale(0);
+        return isNaN(y1) || isNaN(y2) ? 0 : y2 - y1;
       })
 
       .attr("fill", (d) => getSourceColor(d.source))
@@ -155,21 +153,19 @@
       .enter()
       .append("rect")
       .attr("class", "bar")
-      .attr("y", (d) =>
-        newyScale(d.startProgress) < newyScale(d.endProgress)
-          ? newyScale(d.startProgress)
-          : newyScale(d.endProgress)
+      .attr("x", (d) =>
+        Math.min(xScale(d.startProgress), xScale(d.endProgress)),
       )
-      .attr("x", (d) => xScale(d.residual_vector_norm))
+      .attr("y", (d) => newyScale(d.residual_vector_norm))
       .attr("width", (d) => {
-        const x1 = xScale(d.residual_vector_norm);
-        const x2 = xScale(0);
-        return isNaN(x1) || isNaN(x2) ? 0 : x2 - x1;
+        const x1 = xScale(d.startProgress);
+        const x2 = xScale(d.endProgress);
+        return isNaN(x1) || isNaN(x2) ? 0 : Math.abs(x2 - x1);
       })
       .attr("height", (d) => {
-        const y1 = newyScale(d.startProgress);
-        const y2 = newyScale(d.endProgress);
-        return isNaN(y1) || isNaN(y2) ? 0 : Math.abs(y1 - y2);
+        const y1 = newyScale(d.residual_vector_norm);
+        const y2 = newyScale(0);
+        return isNaN(y1) || isNaN(y2) ? 0 : y2 - y1;
       })
       .attr("fill", (d) => getSourceColor(d.source))
       .attr("stroke", (d) => getSourceColor(d.source))
@@ -180,35 +176,27 @@
     if (selectedRange) {
       const { sc, progress } = selectedRange;
 
-      svg
-        .append("rect")
-        .attr("class", "selection-rect")
-        .attr("x", xScale(1))
-        .attr("y", newyScale(progress.max))
-        .attr("width", xScale(0) - xScale(1))
-        .attr("height", newyScale(progress.min) - newyScale(progress.max))
-        .attr("fill", "none")
-        .attr("stroke", "#000")
-        .attr("stroke-width", 0.1)
-        .attr("stroke-dasharray", "3,3")
-        .attr("pointer-events", "none");
+      // svg
+      //   .append("rect")
+      //   .attr("class", "selection-rect")
+      //   .attr("x", xScale(progress.min))
+      //   .attr("y", newyScale(sc.max))
+      //   .attr("width", xScale(progress.max) - xScale(progress.min))
+      //   .attr("height", newyScale(sc.min) - newyScale(sc.max))
+      //   .attr("fill", "none")
+      //   .attr("stroke", "#000")
+      //   .attr("stroke-width", 0.1)
+      //   .attr("stroke-dasharray", "3,3")
+      //   .attr("pointer-events", "none");
 
       bars.attr("opacity", (d) => {
-        const barMinX = Math.min(d.residual_vector_norm, 0);
-        const barMaxX = Math.max(d.residual_vector_norm, 0);
-
-        const xOverlap = !(barMaxX < sc.min || barMinX > sc.max);
-
-        const barStart = d.startProgress;
-        const barEnd = d.endProgress;
-
-        const yOverlap =
-          (barStart >= progress.min && barStart <= progress.max) ||
-          (barEnd >= progress.min && barEnd <= progress.max) ||
-          (barStart <= progress.min && barEnd >= progress.max);
-
+        const barMinX = Math.min(d.startProgress, d.endProgress);
+        const barMaxX = Math.max(d.startProgress, d.endProgress);
+        const xOverlap = !(barMaxX < progress.min || barMinX > progress.max);
+        const barMinY = 0;
+        const barMaxY = d.residual_vector_norm;
+        const yOverlap = !(barMaxY < sc.min || barMinY > sc.max);
         const isSelected = xOverlap && yOverlap;
-
         return isSelected ? 0.9 : 0.1;
       });
     }

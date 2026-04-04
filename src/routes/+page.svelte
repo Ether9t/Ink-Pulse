@@ -4326,16 +4326,16 @@
       {/if}
       <div style="flex: 1;"></div>
       <div style="display: flex; gap: 0.5em; align-items: center;">
-        <div style="margin-right: 30px;">
-          <a id="uploadBtn" class="upload-icon">
-            <span class="material-symbols--upload-file-rounded"></span>
-          </a>
-          <input
-            type="file"
-            id="uploadZip"
-            accept=".zip"
-            style="display: none;"
-          />
+        <a id="uploadBtn">
+          <span class="material-symbols--upload-file-rounded"></span>
+        </a>
+        <input
+          type="file"
+          id="uploadZip"
+          accept=".zip"
+          style="display: none;"
+        />
+        <div style="margin-right: 20px;">
           <label for="dataset-select" style="font-size: 14px;">Dataset:</label>
           <select
             id="dataset-select"
@@ -4383,8 +4383,8 @@
             </p>
           </div>
 
-          <div class="patterns-header">
-            <h4 class="patterns-title">Manage Patterns</h4>
+          <div>
+            <h4 style="margin: 12px 0 12px 0;">Manage Patterns</h4>
             <div
               class="patterns-actions"
               role="toolbar"
@@ -4470,7 +4470,7 @@
               <button
                 class="search-pattern-button"
                 on:click={() => {
-                  // 从 initData 提取所有唯一的来源
+                  // initData is the only source
                   const sources = new Set();
                   $initData.forEach((session) => {
                     if (session.similarityData) {
@@ -4492,9 +4492,9 @@
           </div>
 
           {#if $searchPatternSet && $searchPatternSet.length > 1}
-            <div class="saved-patterns-section" style="margin-top: 20px;">
-              <h4>Saved Patterns</h4>
-              <div class="saved-patterns-list">
+            <div style="margin-top: 0px;">
+              <h4 style="margin: 12px 0 0 0;">Saved Patterns</h4>
+              <div>
                 <SavedPatternsBar
                   patterns={$searchPatternSet}
                   {activePatternId}
@@ -4507,8 +4507,8 @@
               </div>
             </div>
           {:else}
-            <div class="saved-patterns-section">
-              <h4>Saved Patterns</h4>
+            <div>
+              <h4 style="margin: 8px 0 0 0;">Saved Patterns</h4>
               <div class="no-patterns-message">
                 <p>
                   No saved patterns yet. Start by selecting a portion in the
@@ -5142,6 +5142,7 @@
                     <button
                       on:click={toggleTestMode}
                       class="search-pattern-button"
+                      style="margin-bottom: 8px;"
                     >
                       {isTest ? "Switch to Normal Mode" : "Switch to Test Mode"}
                     </button>
@@ -5797,10 +5798,12 @@
                           style="font-size: 12px; align-items: center; display: flex;"
                         >
                           <div style="display: flex;">
-                            <span class="triangle-text-accept">▼</span> Accept AI suggestion
+                            <span class="triangle-text-accept">▼</span> Accept AI
+                            suggestion
                           </div>
                           <div style="display: flex;">
-                            <span class="triangle-text-reject">▼</span> Reject AI Suggestions
+                            <span class="triangle-text-reject">▼</span> Reject AI
+                            Suggestions
                           </div>
                           <div style="display: flex;">
                             <span class="user-line">●</span> User
@@ -6016,7 +6019,7 @@
   }
 
   * {
-    font-family: "Poppins", sans-serif;
+    font-family: "Roboto Condensed", sans-serif;
   }
 
   .container {
