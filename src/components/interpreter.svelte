@@ -774,6 +774,11 @@
         filters: filtersWithRatio,
         userInput: inputMessage,
       });
+      dispatch("display", {
+        explanations: explanationsWithRatios,
+        filters: filtersWithRatio,
+        userInput: inputMessage,
+      });
     }
     if (isTest) {
       dispatch("parsedFilters", {
@@ -897,8 +902,7 @@
 
       <div class="key-info">
         <small>
-          💡 Your API Key is encrypted and stored locally in your browser. It
-          will persist across sessions.
+          💡 Your API Key is encrypted and stored locally in your browser.
         </small>
       </div>
     </div>
@@ -921,6 +925,8 @@
   <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
     <button on:click={handleSendMessage} class="send-btn">Check</button>
   </div>
+</div>
+<!-- <div>
   {#if result?.explanations}
     <div class="explanation-container">
       {#each result.explanations as exp, expIndex}
@@ -981,20 +987,19 @@
           </span>
         </span>
       {/each}
-    </div>
-  {/if}
-  <!-- <ul class="filter-list">
+    </div> -->
+    <!-- <ul class="filter-list">
     {#each result.filters as filter}
       <li>
         {filter.relation}
-
         {filter.span ? `(span: ${filter.span})` : ""}
         {filter.l_position ? `(lhs: ${filter.l_position})` : ""}
         {filter.r_position ? `(rhs: ${filter.r_position})` : ""}
       </li>
     {/each}
   </ul> -->
-</div>
+  <!-- {/if}
+</div> -->
 
 {#if showSavedMessage}
   <div class="saved-message" on:animationend={handleAnimationEnd}>
@@ -1243,7 +1248,7 @@
   }
 
   .api-key-input {
-    width: 100%;
+    width: 220px;
     padding: 0.5rem;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -1259,7 +1264,8 @@
   }
 
   .save-key-btn {
-    flex: 1;
+    /* flex: 1; */
+    width: 220px;
     padding: 0.5rem;
     background-color: #137a7f;
     color: white;
@@ -1302,6 +1308,7 @@
     background-color: #f8f9fa;
     border-radius: 4px;
     border-left: 3px solid #137a7f;
+    width: 220px;
   }
 
   .key-info small {

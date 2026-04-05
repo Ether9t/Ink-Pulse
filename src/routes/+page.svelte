@@ -40,6 +40,12 @@
   import Interpreter from "../components/interpreter.svelte";
   import sourceColorManager from "../components/sourceColorManager.js";
   import ColorSettingsPanel from "../components/ColorSettingsPanel.svelte";
+  import ExplanationList from "../components/explanationList.svelte";
+
+  let exp_result = {
+    explanations: [],
+    filters: []
+  };
 
   let isTest = false;
 
@@ -4425,6 +4431,13 @@
     playbackIndex = idx;
     applyPlaybackFrame(session.sessionId, idx);
   }
+
+  function handleInterpreterDisplay(event) {
+    exp_result = {
+      explanations: event.detail.explanations || [],
+      filters: event.detail.filters || []
+    };
+  }
 </script>
 
 <div class="App">
@@ -5252,10 +5265,15 @@
                             <Interpreter
                               {pattern}
                               on:parsedFilters={handleInterpreterFilters}
+                              on:display={handleInterpreterDisplay}
                               {isTest}
                             />
                           </div>
                         </div>
+                        <div style="margin-top: 8px">
+                          <ExplanationList {exp_result} />
+                        </div>
+                        
                         <!-- <div style="margin-top: 10px; width: 50%">
                           <div
                             class:dimmed={!isProgressChecked}
