@@ -4799,7 +4799,7 @@
                       Counts: {pattern.count}
                     </div>
                   </div>
-                  {#if selectionSrc == "lineChart_y"}
+                  <!-- {#if selectionSrc == "lineChart_y"}
                     <div
                       style="display: flex; flex-wrap: wrap; gap: 0; width: 100%; align-items: flex-start;"
                     >
@@ -4813,13 +4813,13 @@
                           border-radius: 4px;
                           background-color: white;
                         "
-                      >
+                      > -->
                         <!-- Pattern chart -->
-                        <div
+                        <!-- <div
                           style="flex: 1 1 50%; margin-top: 10px; padding: 0;"
-                        >
+                        > -->
                           <!-- Barchart for vertical selection preview -->
-                          <div style="margin: 0; padding: 0;">
+                          <!-- <div style="margin: 0; padding: 0;">
                             <BarChartY
                               sessionId={$clickSession.sessionId}
                               similarityData={$clickSession.similarityData}
@@ -4839,10 +4839,10 @@
                               bind:xScaleBarChartFactor
                             />
                           </div>
-                        </div>
+                        </div> -->
 
                         <!-- Line chart -->
-                        <div
+                        <!-- <div
                           style="flex: 1 1 50%; margin-top: 7px; padding: 0; margin-left: 0;"
                         >
                           <div
@@ -4868,7 +4868,7 @@
                             />
                           </div>
                         </div>
-                      </div>
+                      </div> -->
 
                       <!-- <div
                         style="
@@ -5025,11 +5025,10 @@
                           </div>
                         </div>
                       </div> -->
-                    </div>
-                  {:else}
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <!-- </div> -->
+                  <!-- {:else} -->
+                    <!-- <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                       {#if selectionSrc == "lineChart_x"}
-                        <!-- Time mode: Show LineChart with time selection highlight -->
                         <div
                           class="pattern-chart-preview small-preview"
                           style="height: 160px; width: fit-content; max-width: 100%;"
@@ -5037,10 +5036,8 @@
                           <LineChartPreview
                             bind:this={chartRefs[sessionId]}
                             chartData={(() => {
-                              // Make sure charts always display
                               let data = $clickSession?.chartData;
 
-                              // If current data cannot use
                               if (
                                 !data ||
                                 !Array.isArray(data) ||
@@ -5049,7 +5046,6 @@
                                 data = pattern.wholeData;
                               }
 
-                              // Empty array
                               if (!data || !Array.isArray(data)) {
                                 data = [];
                               }
@@ -5063,7 +5059,7 @@
                             highlightMode={pattern.highlightMode ?? null}
                             selectionContext={pattern.selectionContext ?? null}
                           />
-                        </div>
+                        </div> -->
                         <!-- <div
                           style="
                             display: grid;
@@ -5221,28 +5217,44 @@
                             </div>
                           </div>
                         </div> -->
-                      {:else}
+                      <!-- {:else} -->
                         <!-- Progress/Bar modes: Show PatternChartPreview -->
                         <!-- Barchart for horizontal selection preview -->
-                        <div class="pattern-chart-preview small-preview">
-                          <BarChartY
-                            sessionId={$clickSession.sessionId}
-                            similarityData={$clickSession.similarityData}
-                            height={150}
-                            width={180}
-                            {yScale}
-                            xAxisField={barChartXAxis}
-                            yAxisField={barChartYAxis}
-                            bind:sharedSelection
-                            readOnly={true}
-                            on:selectionChanged={handleSelectionChanged}
-                            on:selectionCleared={handleSelectionCleared}
-                            bind:this={
-                              chartRefs[$clickSession.sessionId + "-barChart"]
-                            }
-                            on:chartLoaded={handleChartLoaded}
-                            bind:xScaleBarChartFactor
-                          />
+                        <div style="display: flex; flex-direction: row; justify-content: center;">
+                          <div class="pattern-chart-preview small-preview">
+                            <BarChartY
+                              sessionId={$clickSession.sessionId}
+                              similarityData={$clickSession.similarityData}
+                              height={150}
+                              width={180}
+                              {yScale}
+                              xAxisField={barChartXAxis}
+                              yAxisField={barChartYAxis}
+                              bind:sharedSelection
+                              readOnly={true}
+                              on:selectionChanged={handleSelectionChanged}
+                              on:selectionCleared={handleSelectionCleared}
+                              bind:this={
+                                chartRefs[$clickSession.sessionId + "-barChart"]
+                              }
+                              on:chartLoaded={handleChartLoaded}
+                              bind:xScaleBarChartFactor
+                            />
+                          </div>
+                          <div style="flex: 0 0 auto; ">
+                            <!-- <button
+                              on:click={toggleTestMode}
+                              class="search-pattern-button"
+                              style="margin-bottom: 8px;"
+                            >
+                              {isTest ? "Switch to Normal Mode" : "Switch to Test Mode"}
+                            </button> -->
+                            <Interpreter
+                              {pattern}
+                              on:parsedFilters={handleInterpreterFilters}
+                              {isTest}
+                            />
+                          </div>
                         </div>
                         <!-- <div style="margin-top: 10px; width: 50%">
                           <div
@@ -5376,23 +5388,9 @@
                             </div>
                           </div>
                         </div> -->
-                      {/if}
-                    </div>
-                  {/if}
-                  <div class="chat-panel">
-                    <button
-                      on:click={toggleTestMode}
-                      class="search-pattern-button"
-                      style="margin-bottom: 8px;"
-                    >
-                      {isTest ? "Switch to Normal Mode" : "Switch to Test Mode"}
-                    </button>
-                    <Interpreter
-                      {pattern}
-                      on:parsedFilters={handleInterpreterFilters}
-                      {isTest}
-                    />
-                  </div>
+                      <!-- {/if} -->
+                    <!-- </div> -->
+                  <!-- {/if} -->
                   {#if $patternDataList.length > 0 && isSearch == 2}
                     <div
                       style="display: flex; justify-content: space-between; align-items: center;"
@@ -7001,7 +6999,7 @@
   .export-menu {
     position: absolute;
     top: 100%;
-    left: 0; /* 改为左对齐，避免超出屏幕 */
+    left: 0;
     background: white;
     border: 2px solid #007acc;
     border-radius: 8px;

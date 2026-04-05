@@ -918,7 +918,7 @@
       }}
     />
   </div>
-  <div style="margin-top: 0.5rem;">
+  <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
     <button on:click={handleSendMessage} class="send-btn">Check</button>
   </div>
   {#if result?.explanations}
@@ -948,7 +948,8 @@
                         type="text"
                         class="ratio-input"
                         bind:value={ratioInputValue}
-                        on:keydown={(e) => handleRatioInput(expIndex, part.id, e)}
+                        on:keydown={(e) =>
+                          handleRatioInput(expIndex, part.id, e)}
                         on:blur={() => confirmRatioInput(expIndex, part.id)}
                         placeholder="e.g., 2.5"
                         autofocus
@@ -1056,11 +1057,11 @@
   }
 
   .chat-content {
-    background-color: white;
-    padding: 1rem;
+    margin: 0 0 0 8px;
     border-radius: 8px;
-    max-width: 400px;
-    margin: auto;
+    max-width: none;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .input-area {
@@ -1069,7 +1070,8 @@
   }
 
   .input-area textarea {
-    width: 100%;
+    width: 220px;
+    height: 100px;
     padding: 0.5rem;
     border-radius: 4px;
     resize: none;
@@ -1094,6 +1096,7 @@
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    margin-right: 8px;
   }
 
   .send-btn:hover {
@@ -1106,7 +1109,7 @@
   }
 
   .explanation-container {
-    max-width: 400px;
+    width: 100%;
     word-wrap: break-word;
     line-height: 1.5;
   }
