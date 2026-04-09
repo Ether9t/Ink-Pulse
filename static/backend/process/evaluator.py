@@ -34,32 +34,34 @@ def chatgpt_prompter(input_prompt):
 def evaluate_prompt(session_id, topic, intro, article):
     result = []
     EVALUATION_PROMPT_TEMPLATE = f"""
-        Topic: {topic}
+Topic: {topic}
         Introduction: {intro}
         Article: {article}
-        —– 
-        You are evaluating an article co-written by a human and an AI. You must objectively score the topic-article pair based on the two criteria below:
-        New Idea (0-5):  
-        Evaluate how much *new, original thinking* the article contributes *beyond the Introduction*.  
-        - 0: No ideas; incoherent or irrelevant.  
-        - 1: Purely obvious or generic.  
-        - 2: Fragmented or shallow ideas.  
-        - 3: Standard ideas with some development.  
-        - 4: Clear new insights or novel angles.  
-        - 5: Multiple strong original ideas; deep or creative expansion beyond the intro.
+        —–
+        You are evaluating an article co-authored by a human and an AI. Your task is to objectively score the article against its given topic based on two criteria: Creativity and Coherence.
+        Important Note: The Introduction is provided purely for context. Do not factor it into your scoring of the article's content.
 
-        Coherence (0-5):  
-        Evaluate how well the article maintains *logical structure*, *natural transitions*, and *stylistic consistency* throughout.
-        - 0: Disjointed or jarring; abrupt shifts in tone or topic. 
-        - 1: Minimal cohesion; sections feel stitched together.
-        - 2: Mostly smooth but has several awkward transitions.
-        - 3: Generally coherent; occasional unevenness.
-        - 4: Well-structured with clear, natural progression.
-        - 5: Seamless flow and unity; stylistically and structurally refined.
+        Creativity (0-5):
+        Evaluate how much *new, original thinking* the article contributes *beyond the Introduction*.
+        - 0: No new ideas introduced, or the content is completely irrelevant.
+        - 1: Ideas lack originality, merely echoing or slightly extending the introduction without meaningful development.
+        - 2: Introduces new ideas, but they remain shallow or fragmented.
+        - 3: Presents standard, expected ideas with some clear development.
+        - 4: Offers clear new insights or explores fresh perspectives.
+        - 5: Delivers multiple strong, original ideas with deep and creative expansion beyond the introduction.
+
+        Coherence (0-5):
+        Evaluate how well the article maintains *logical structure*, *natural transitions*, and *stylistic consistency* throughout the entire writing.
+        - 0: Lacks logical connection between ideas; the writing is difficult to follow due to abrupt, disruptive shifts in tone or topic.
+        - 1: Minimal cohesion; sections are arbitrarily grouped without clear transitions, making the overall structure feel forced or fragmented.
+        - 2: Mostly readable, but contains several awkward transitions or structural missteps.
+        - 3: Generally logical and coherent, with only occasional unevenness in flow or tone.
+        - 4: Well-structured with clear, natural transitions and a logical progression of ideas.
+        - 5: Seamless flow and strong unity; highly refined and polished in both structure and style.
 
         Note: The Introduction is provided for context only and should NOT be considered part of the article content for scoring purposes.
-        Your response should be in JSON format as follows:  
-        ["session_id": {session_id}, "idea_score": "idea_score","coherence_score": "coherence_score", "reason": "Explain briefly why you gave these scores, citing specific examples or patterns from the article."]
+        Your response should be in JSON format as follows:
+        {"session_id": "{session_id}", "idea_score": "...", "coherence_score": "...", "reason": "..."}
         —–
         score:
     """      
